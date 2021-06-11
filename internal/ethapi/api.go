@@ -1566,7 +1566,7 @@ func (s *PublicTransactionPoolAPI) GetAccountTokens(ctx context.Context, address
 		return response, nil
 	}
 
-	return []AccountTokenBalanceResult{}, nil
+	return make([]AccountTokenBalanceResult, 0), nil
 }
 
 // GetTransactionByHash returns the transaction for the given hash
