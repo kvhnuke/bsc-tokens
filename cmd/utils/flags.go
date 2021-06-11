@@ -51,6 +51,7 @@ import (
 	"github.com/ethereum/go-ethereum/eth/tracers"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/ethstats"
+	"github.com/ethereum/go-ethereum/ethtokens"
 	"github.com/ethereum/go-ethereum/graphql"
 	"github.com/ethereum/go-ethereum/internal/ethapi"
 	"github.com/ethereum/go-ethereum/internal/flags"
@@ -1772,6 +1773,12 @@ func RegisterEthService(stack *node.Node, cfg *ethconfig.Config) (ethapi.Backend
 	}
 	stack.RegisterAPIs(tracers.APIs(backend.APIBackend))
 	return backend.APIBackend, backend
+}
+
+func RegisterEthTokenService(stack *node.Node, backend ethapi.Backend) {
+	if err := ethtokens.New(stack, backend, backend.Engine()); err != nil {
+		Fatalf("Failed to register the Ethereum token service: %v", err)
+	}
 }
 
 // RegisterEthStatsService configures the Ethereum Stats daemon and adds it to
