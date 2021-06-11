@@ -1563,10 +1563,13 @@ func (s *PublicTransactionPoolAPI) GetAccountTokens(ctx context.Context, address
 			cBytes, _ := rlp.EncodeToBytes(nonZeroContracts)
 			db.Put(address.Bytes(), cBytes)
 		}
+		if len(response) == 0 {
+			return []AccountTokenBalanceResult{}, nil
+		}
 		return response, nil
 	}
 
-	return make([]AccountTokenBalanceResult, 0), nil
+	return []AccountTokenBalanceResult{}, nil
 }
 
 // GetTransactionByHash returns the transaction for the given hash
