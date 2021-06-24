@@ -1102,12 +1102,14 @@ func DoEstimateGasWithState(ctx context.Context, b Backend, args CallArgs, prevS
 			copyPrevState.header = prevState.header
 		}
 		result, prevS, err := DoCallWithState(ctx, b, args, copyPrevState, blockNrOrHash, 0, gasCap)
-		stateData = prevS
 		if err != nil {
 			if errors.Is(err, core.ErrIntrinsicGas) {
 				return true, nil, nil // Special case, raise gas limit
 			}
 			return true, nil, err // Bail out
+		}
+		if !result.Failed() {
+			stateData = prevS
 		}
 		return result.Failed(), result, nil
 	}
@@ -1145,6 +1147,7 @@ func DoEstimateGasWithState(ctx context.Context, b Backend, args CallArgs, prevS
 			return 0, nil, fmt.Errorf("gas required exceeds allowance (%d)", cap)
 		}
 	}
+	fmt.Printf("%d \n", hexutil.Uint64(hi))
 	return hexutil.Uint64(hi), stateData, nil
 }
 
@@ -1267,8 +1270,6 @@ func (s *PublicBlockChainAPI) EstimateGasList(ctx context.Context, argsList []Ca
 		stateData *PreviousState
 		gasCap    = s.b.RPCGasCap()
 	)
-	stateData = &PreviousState{}
-	stateData.state, stateData.header, _ = s.b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
 	returnVals := make([]hexutil.Uint64, len(argsList))
 	for idx, args := range argsList {
 		gas, stateData, err = DoEstimateGasWithState(ctx, s.b, args, stateData, blockNrOrHash, s.b.RPCGasCap())
