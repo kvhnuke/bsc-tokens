@@ -1147,7 +1147,6 @@ func DoEstimateGasWithState(ctx context.Context, b Backend, args CallArgs, prevS
 			return 0, nil, fmt.Errorf("gas required exceeds allowance (%d)", cap)
 		}
 	}
-	fmt.Printf("%d \n", hexutil.Uint64(hi))
 	return hexutil.Uint64(hi), stateData, nil
 }
 
