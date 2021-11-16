@@ -445,8 +445,8 @@ var (
 	}
 	DiffBlockFlag = cli.Uint64Flag{
 		Name:  "diffblock",
-		Usage: "The number of blocks should be persisted in db (default = 864000 )",
-		Value: uint64(864000),
+		Usage: "The number of blocks should be persisted in db (default = 86400)",
+		Value: uint64(86400),
 	}
 	// Miner settings
 	MiningEnabledFlag = cli.BoolFlag{

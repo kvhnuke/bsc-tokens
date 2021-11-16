@@ -280,10 +280,14 @@ func TestFreezeDiffLayer(t *testing.T) {
 	blockNum := 1024
 	fullBackend := newTestBackend(blockNum, true)
 	defer fullBackend.close()
+	for len(fullBackend.chain.diffQueueBuffer) > 0 {
+		// Wait for the buffer to be zero.
+	}
 	// Minus one empty block.
 	if fullBackend.chain.diffQueue.Size() != blockNum-1 {
-		t.Errorf("size of diff queue is wrong, expected: %d, get: %d", blockNum, fullBackend.chain.diffQueue.Size())
+		t.Errorf("size of diff queue is wrong, expected: %d, get: %d", blockNum-1, fullBackend.chain.diffQueue.Size())
 	}
+
 	time.Sleep(diffLayerFreezerRecheckInterval + 1*time.Second)
 	if fullBackend.chain.diffQueue.Size() != int(fullBackend.chain.triesInMemory) {
 		t.Errorf("size of diff queue is wrong, expected: %d, get: %d", blockNum, fullBackend.chain.diffQueue.Size())
@@ -318,7 +322,7 @@ func TestPruneDiffLayer(t *testing.T) {
 	if len(fullBackend.chain.diffNumToBlockHashes) != maxDiffForkDist {
 		t.Error("unexpected size of diffNumToBlockHashes")
 	}
-	if len(fullBackend.chain.diffPeersToDiffHashes) != 2 {
+	if len(fullBackend.chain.diffPeersToDiffHashes) != 1 {
 		t.Error("unexpected size of diffPeersToDiffHashes")
 	}
 	if len(fullBackend.chain.blockHashToDiffLayers) != maxDiffForkDist {

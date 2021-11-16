@@ -478,6 +478,9 @@ func (bc *BlockChain) cacheReceipts(hash common.Hash, receipts types.Receipts) {
 }
 
 func (bc *BlockChain) cacheDiffLayer(diffLayer *types.DiffLayer) {
+	if bc.diffLayerCache.Len() >= diffLayerCacheLimit {
+		bc.diffLayerCache.RemoveOldest()
+	}
 	bc.diffLayerCache.Add(diffLayer.BlockHash, diffLayer)
 	if bc.db.DiffStore() != nil {
 		// push to priority queue before persisting
@@ -1008,7 +1011,7 @@ func (bc *BlockChain) GetDiffAccounts(blockHash common.Hash) ([]common.Address, 
 
 	if diffLayer == nil {
 		if header.TxHash != types.EmptyRootHash {
-			return nil, fmt.Errorf("no diff layer found")
+			return nil, ErrDiffLayerNotFound
 		}
 
 		return nil, nil
@@ -2485,9 +2488,12 @@ func (bc *BlockChain) update() {
 }
 
 func (bc *BlockChain) trustedDiffLayerLoop() {
-	recheck := time.Tick(diffLayerFreezerRecheckInterval)
+	recheck := time.NewTicker(diffLayerFreezerRecheckInterval)
 	bc.wg.Add(1)
-	defer bc.wg.Done()
+	defer func() {
+		bc.wg.Done()
+		recheck.Stop()
+	}()
 	for {
 		select {
 		case diff := <-bc.diffQueueBuffer:
@@ -2520,28 +2526,27 @@ func (bc *BlockChain) trustedDiffLayerLoop() {
 				batch.Reset()
 			}
 			return
-		case <-recheck:
+		case <-recheck.C:
 			currentHeight := bc.CurrentBlock().NumberU64()
 			var batch ethdb.Batch
 			for !bc.diffQueue.Empty() {
 				diff, prio := bc.diffQueue.Pop()
 				diffLayer := diff.(*types.DiffLayer)
 
-				// if the block old enough
-				if int64(currentHeight)+prio >= int64(bc.triesInMemory) {
-					canonicalHash := bc.GetCanonicalHash(uint64(-prio))
-					// on the canonical chain
-					if canonicalHash == diffLayer.BlockHash {
-						if batch == nil {
-							batch = bc.db.DiffStore().NewBatch()
-						}
-						rawdb.WriteDiffLayer(batch, diffLayer.BlockHash, diffLayer)
-						staleHash := bc.GetCanonicalHash(uint64(-prio) - bc.diffLayerFreezerBlockLimit)
-						rawdb.DeleteDiffLayer(batch, staleHash)
-					}
-				} else {
+				// if the block not old enough
+				if int64(currentHeight)+prio < int64(bc.triesInMemory) {
 					bc.diffQueue.Push(diffLayer, prio)
 					break
+				}
+				canonicalHash := bc.GetCanonicalHash(uint64(-prio))
+				// on the canonical chain
+				if canonicalHash == diffLayer.BlockHash {
+					if batch == nil {
+						batch = bc.db.DiffStore().NewBatch()
+					}
+					rawdb.WriteDiffLayer(batch, diffLayer.BlockHash, diffLayer)
+					staleHash := bc.GetCanonicalHash(uint64(-prio) - bc.diffLayerFreezerBlockLimit)
+					rawdb.DeleteDiffLayer(batch, staleHash)
 				}
 				if batch != nil && batch.ValueSize() > ethdb.IdealBatchSize {
 					if err := batch.Write(); err != nil {
@@ -2615,34 +2620,6 @@ func (bc *BlockChain) removeDiffLayers(diffHash common.Hash) {
 	}
 }
 
-func (bc *BlockChain) RemoveDiffPeer(pid string) {
-	bc.diffMux.Lock()
-	defer bc.diffMux.Unlock()
-	if invaliDiffHashes := bc.diffPeersToDiffHashes[pid]; invaliDiffHashes != nil {
-		for invalidDiffHash := range invaliDiffHashes {
-			lastDiffHash := false
-			if peers, ok := bc.diffHashToPeers[invalidDiffHash]; ok {
-				delete(peers, pid)
-				if len(peers) == 0 {
-					lastDiffHash = true
-					delete(bc.diffHashToPeers, invalidDiffHash)
-				}
-			}
-			if lastDiffHash {
-				affectedBlockHash := bc.diffHashToBlockHash[invalidDiffHash]
-				if diffs, exist := bc.blockHashToDiffLayers[affectedBlockHash]; exist {
-					delete(diffs, invalidDiffHash)
-					if len(diffs) == 0 {
-						delete(bc.blockHashToDiffLayers, affectedBlockHash)
-					}
-				}
-				delete(bc.diffHashToBlockHash, invalidDiffHash)
-			}
-		}
-		delete(bc.diffPeersToDiffHashes, pid)
-	}
-}
-
 func (bc *BlockChain) untrustedDiffLayerPruneLoop() {
 	recheck := time.NewTicker(diffLayerPruneRecheckInterval)
 	bc.wg.Add(1)
@@ -2710,24 +2687,27 @@ func (bc *BlockChain) HandleDiffLayer(diffLayer *types.DiffLayer, pid string, fu
 	// Basic check
 	currentHeight := bc.CurrentBlock().NumberU64()
 	if diffLayer.Number > currentHeight && diffLayer.Number-currentHeight > maxDiffQueueDist {
-		log.Error("diff layers too new from current", "pid", pid)
+		log.Debug("diff layers too new from current", "pid", pid)
 		return nil
 	}
 	if diffLayer.Number < currentHeight && currentHeight-diffLayer.Number > maxDiffForkDist {
-		log.Error("diff layers too old from current", "pid", pid)
+		log.Debug("diff layers too old from current", "pid", pid)
 		return nil
 	}
 
 	bc.diffMux.Lock()
 	defer bc.diffMux.Unlock()
+	if blockHash, exist := bc.diffHashToBlockHash[diffLayer.DiffHash]; exist && blockHash == diffLayer.BlockHash {
+		return nil
+	}
 
 	if !fulfilled && len(bc.diffPeersToDiffHashes[pid]) > maxDiffLimitForBroadcast {
-		log.Error("too many accumulated diffLayers", "pid", pid)
+		log.Debug("too many accumulated diffLayers", "pid", pid)
 		return nil
 	}
 
 	if len(bc.diffPeersToDiffHashes[pid]) > maxDiffLimit {
-		log.Error("too many accumulated diffLayers", "pid", pid)
+		log.Debug("too many accumulated diffLayers", "pid", pid)
 		return nil
 	}
 	if _, exist := bc.diffPeersToDiffHashes[pid]; exist {
