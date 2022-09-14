@@ -2039,19 +2039,19 @@ func (s *PublicBlockChainAPI) GetTokenInfo(ctx context.Context, contractAddress 
 	}, bNrOrHash, &StateOverride{}, 5*time.Second, s.b.RPCGasCap())
 	if len(resultName.Return()) > 0 {
 		ret, _ := name.Outputs.Unpack(resultName.Return())
-		response = append(response, ret[0].(hexutil.Bytes))
+		response = append(response, []byte(ret[0].(string)))
 	} else {
 		response = append(response, []byte{})
 	}
 	if len(resultSymbol.Return()) > 0 {
 		ret, _ := symbol.Outputs.Unpack(resultSymbol.Return())
-		response = append(response, ret[0].(hexutil.Bytes))
+		response = append(response, []byte(ret[0].(string)))
 	} else {
 		response = append(response, []byte{})
 	}
 	if len(resultDecimals.Return()) > 0 {
 		ret, _ := decimals.Outputs.Unpack(resultDecimals.Return())
-		response = append(response, ret[0].(hexutil.Bytes))
+		response = append(response, ret[0].(*big.Int).Bytes())
 	} else {
 		response = append(response, []byte{})
 	}
