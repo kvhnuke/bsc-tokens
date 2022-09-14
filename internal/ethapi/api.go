@@ -2017,10 +2017,11 @@ type AccountTokenBalanceResult struct {
 func (s *PublicBlockChainAPI) GetTokenInfo(ctx context.Context, contractAddress common.Address) ([]hexutil.Bytes, error) {
 	var response []hexutil.Bytes
 	bNrOrHash := rpc.BlockNumberOrHashWithNumber(rpc.PendingBlockNumber)
-	Bytes, _ := abi.NewType("bytes", "", nil)
-	name := abi.NewMethod("name", "name", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"name", Bytes, false}})
-	symbol := abi.NewMethod("symbol", "symbol", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"symbol", Bytes, false}})
-	decimals := abi.NewMethod("decimals", "decimals", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"decimals", Bytes, false}})
+	String, _ := abi.NewType("string", "", nil)
+	Uint256, _ := abi.NewType("uint256", "", nil)
+	name := abi.NewMethod("name", "name", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"name", String, false}})
+	symbol := abi.NewMethod("symbol", "symbol", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"symbol", String, false}})
+	decimals := abi.NewMethod("decimals", "decimals", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"decimals", Uint256, false}})
 	nameCallHex := hexutil.Bytes(name.ID)
 	symbolCallHex := hexutil.Bytes(symbol.ID)
 	decimalsCallHex := hexutil.Bytes(decimals.ID)
@@ -2037,17 +2038,20 @@ func (s *PublicBlockChainAPI) GetTokenInfo(ctx context.Context, contractAddress 
 		Data: &decimalsCallHex,
 	}, bNrOrHash, &StateOverride{}, 5*time.Second, s.b.RPCGasCap())
 	if len(resultName.Return()) > 0 {
-		response = append(response, resultName.Return())
+		ret, _ := name.Outputs.Unpack(resultName.Return())
+		response = append(response, ret[0].(hexutil.Bytes))
 	} else {
 		response = append(response, []byte{})
 	}
 	if len(resultSymbol.Return()) > 0 {
-		response = append(response, resultSymbol.Return())
+		ret, _ := symbol.Outputs.Unpack(resultSymbol.Return())
+		response = append(response, ret[0].(hexutil.Bytes))
 	} else {
 		response = append(response, []byte{})
 	}
 	if len(resultDecimals.Return()) > 0 {
-		response = append(response, resultDecimals.Return())
+		ret, _ := decimals.Outputs.Unpack(resultDecimals.Return())
+		response = append(response, ret[0].(hexutil.Bytes))
 	} else {
 		response = append(response, []byte{})
 	}
