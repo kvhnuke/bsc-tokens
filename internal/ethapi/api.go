@@ -2014,8 +2014,8 @@ type AccountTokenBalanceResult struct {
 	Balance  string         `json:"balance"`
 }
 
-func (s *PublicBlockChainAPI) GetTokenInfo(ctx context.Context, contractAddress common.Address) ([][]byte, error) {
-	var response [][]byte
+func (s *PublicBlockChainAPI) GetTokenInfo(ctx context.Context, contractAddress common.Address) ([]hexutil.Bytes, error) {
+	var response []hexutil.Bytes
 	bNrOrHash := rpc.BlockNumberOrHashWithNumber(rpc.PendingBlockNumber)
 	Bytes, _ := abi.NewType("bytes", "", nil)
 	name := abi.NewMethod("name", "name", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"name", Bytes, false}})
