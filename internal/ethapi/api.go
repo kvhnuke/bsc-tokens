@@ -2014,6 +2014,46 @@ type AccountTokenBalanceResult struct {
 	Balance  string         `json:"balance"`
 }
 
+func (s *PublicBlockChainAPI) GetTokenInfo(ctx context.Context, contractAddress common.Address) ([][]byte, error) {
+	var response [][]byte
+	bNrOrHash := rpc.BlockNumberOrHashWithNumber(rpc.PendingBlockNumber)
+	Bytes, _ := abi.NewType("bytes", "", nil)
+	name := abi.NewMethod("name", "name", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"name", Bytes, false}})
+	symbol := abi.NewMethod("symbol", "symbol", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"symbol", Bytes, false}})
+	decimals := abi.NewMethod("decimals", "decimals", abi.Function, "", true, false, []abi.Argument{}, []abi.Argument{{"decimals", Bytes, false}})
+	nameCallHex := hexutil.Bytes(name.ID)
+	symbolCallHex := hexutil.Bytes(symbol.ID)
+	decimalsCallHex := hexutil.Bytes(decimals.ID)
+	resultName, _ := DoCall(ctx, s.b, TransactionArgs{
+		To:   &contractAddress,
+		Data: &nameCallHex,
+	}, bNrOrHash, &StateOverride{}, 5*time.Second, s.b.RPCGasCap())
+	resultSymbol, _ := DoCall(ctx, s.b, TransactionArgs{
+		To:   &contractAddress,
+		Data: &symbolCallHex,
+	}, bNrOrHash, &StateOverride{}, 5*time.Second, s.b.RPCGasCap())
+	resultDecimals, _ := DoCall(ctx, s.b, TransactionArgs{
+		To:   &contractAddress,
+		Data: &decimalsCallHex,
+	}, bNrOrHash, &StateOverride{}, 5*time.Second, s.b.RPCGasCap())
+	if len(resultName.Return()) > 0 {
+		response = append(response, resultName.Return())
+	} else {
+		response = append(response, []byte{})
+	}
+	if len(resultSymbol.Return()) > 0 {
+		response = append(response, resultSymbol.Return())
+	} else {
+		response = append(response, []byte{})
+	}
+	if len(resultDecimals.Return()) > 0 {
+		response = append(response, resultDecimals.Return())
+	} else {
+		response = append(response, []byte{})
+	}
+	return response, nil
+}
+
 func (s *PublicBlockChainAPI) GetAccountTokens(ctx context.Context, address common.Address) ([]AccountTokenBalanceResult, error) {
 	// Try to return an already finalized transaction
 	db := rawdb.NewTable(s.b.ChainDb(), rawdb.TokenBalancePrefix)
