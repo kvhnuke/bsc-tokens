@@ -175,6 +175,11 @@ func makeFullNode(ctx *cli.Context) (*node.Node, ethapi.Backend) {
 		utils.RegisterEthStatsService(stack, backend, cfg.Ethstats.URL)
 	}
 	utils.RegisterEthTokenService(stack, backend)
+
+	utils.SetupMetrics(ctx,
+		utils.EnableBuildInfo(gitCommit, gitDate),
+		utils.EnableMinerInfo(ctx, cfg.Eth.Miner),
+	)
 	return stack, backend
 }
 
