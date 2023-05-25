@@ -1,4 +1,71 @@
 # Changelog
+## v1.2.4
+FEATURE
+* [\#1636](https://github.com/bnb-chain/bsc/pull/1636) upgrade: block height of Luban on mainnet
+
+## v1.2.3
+FEATURE
+* [\#1574](https://github.com/bnb-chain/bsc/pull/1574) upgrade: update PlatoUpgrade contracts code
+* [\#1594](https://github.com/bnb-chain/bsc/pull/1594) upgrade: block height of Plato on testnet
+
+IMPROVEMENT
+* [\#866](https://github.com/bnb-chain/bsc/pull/866) code: x = append(y) is equivalent to x = y
+* [\#1488](https://github.com/bnb-chain/bsc/pull/1488) eth/tracers, core/vm: remove `time` from trace output and tracing interface
+* [\#1547](https://github.com/bnb-chain/bsc/pull/1547) fix: recently signed check when slashing unavailable validator
+* [\#1573](https://github.com/bnb-chain/bsc/pull/1573) feat: remove supports for legacy proof type
+* [\#1576](https://github.com/bnb-chain/bsc/pull/1576) fix: support golang 1.20 by upgrading prysm to v4
+* [\#1578](https://github.com/bnb-chain/bsc/pull/1578) fix: output an error log when bsc extension fail to handshake
+* [\#1583](https://github.com/bnb-chain/bsc/pull/1583) metrics: add a counter for validator to check work status of voting
+
+BUGFIX
+* [\#1566](https://github.com/bnb-chain/bsc/pull/1566) fix: config for VoteJournalDir and BLSWalletDir
+* [\#1572](https://github.com/bnb-chain/bsc/pull/1572) fix: remove dynamic metric labels about fast finality
+* [\#1575](https://github.com/bnb-chain/bsc/pull/1575) fix: make BLST PORTABLE for release binary
+* [\#1590](https://github.com/bnb-chain/bsc/pull/1590) fix: fix snap flaky tests
+
+## v1.2.2
+It was skipped by a mistake, replaced by v1.2.3
+
+## v1.2.1
+IMPROVEMENT
+* [\#1527](https://github.com/bnb-chain/bsc/pull/1527) log: revert a log back to trace level
+
+## v1.2.0
+FEATURE
+* [\#936](https://github.com/bnb-chain/bsc/pull/936) BEP-126: Introduce Fast Finality Mechanism
+* [\#1325](https://github.com/bnb-chain/bsc/pull/1325) genesis: add BEP174 changes to relayer contract
+* [\#1357](https://github.com/bnb-chain/bsc/pull/1357) Integration API for EIP-4337 bundler with an L2 validator/sequencer
+* [\#1463](https://github.com/bnb-chain/bsc/pull/1463) BEP-221: implement cometBFT light block validation
+* [\#1493](https://github.com/bnb-chain/bsc/pull/1493) bep: update the bytecode of luban fork after the contract release
+
+IMPROVEMENT
+* [\#1486](https://github.com/bnb-chain/bsc/pull/1486) feature: remove diff protocol registration
+* [\#1434](https://github.com/bnb-chain/bsc/pull/1434) fix: improvements after testing fast finality
+
+BUGFIX
+* [\#1430](https://github.com/bnb-chain/bsc/pull/1430) docker: upgrade alpine version & remove apks version
+* [\#1458](https://github.com/bnb-chain/bsc/pull/1458) cmd/faucet: clear reqs list when reorg to lower nonce
+* [\#1484](https://github.com/bnb-chain/bsc/pull/1484) fix: a deadlock caused by bsc protocol handeshake timeout
+
+## v1.1.23
+BUGFIX
+* [\#1464](https://github.com/bnb-chain/bsc/pull/1464) fix: panic on using WaitGroup after it is freed
+
+## v1.1.22
+FEATURE
+* [\#1361](https://github.com/bnb-chain/bsc/pull/1361) cmd/faucet: merge ipfaucet2 branch to develop
+
+IMPROVEMENT
+* [\#1412](https://github.com/bnb-chain/bsc/pull/1412) fix: init-network with config.toml without setting TimeFormat
+* [\#1401](https://github.com/bnb-chain/bsc/pull/1401) log: support custom time format configuration
+* [\#1382](https://github.com/bnb-chain/bsc/pull/1382) consnesus/parlia: abort sealing when block in the same height has updated
+* [\#1383](https://github.com/bnb-chain/bsc/pull/1383) miner: no need to broadcast sidechain header mined by this validator
+
+BUGFIX
+* [\#1379](https://github.com/bnb-chain/bsc/pull/1379) UT: fix some flaky tests
+* [\#1403](https://github.com/bnb-chain/bsc/pull/1403) Makefile: fix devtools install error
+* [\#1381](https://github.com/bnb-chain/bsc/pull/1381) fix: snapshot generation issue after chain reinit from a freezer
+
 ## v1.1.21
 FEATURE
 * [\#1389](https://github.com/bnb-chain/bsc/pull/1389) upgrade: update the fork height of planck upgrade on mainnet
@@ -55,7 +122,6 @@ BUGFIX
 
 ## v1.1.18
 IMPROVEMENT
-
 * [\#1209](https://github.com/bnb-chain/bsc/pull/1209) metrics: add build info into metrics server
 * [\#1204](https://github.com/bnb-chain/bsc/pull/1204) worker: NewTxsEvent and triePrefetch reuse in mining task
 * [\#1195](https://github.com/bnb-chain/bsc/pull/1195) hardfork: update Gibbs fork height and system contract code

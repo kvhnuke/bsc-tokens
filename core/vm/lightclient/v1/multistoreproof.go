@@ -1,4 +1,4 @@
-package lightclient
+package v1
 
 import (
 	"bytes"
@@ -139,6 +139,13 @@ func Ics23CompatibleProofRuntime() (prt *merkle.ProofRuntime) {
 	prt.RegisterOpDecoder(iavl.ProofOpIAVLValue, iavl.IAVLValueOpDecoder)
 	prt.RegisterOpDecoder(iavl.ProofOpIAVLAbsence, iavl.IAVLAbsenceOpDecoder)
 	prt.RegisterOpDecoder(ProofOpMultiStore, MultiStoreProofOpDecoder)
+	prt.RegisterOpDecoder(ProofOpIAVLCommitment, CommitmentOpDecoder)
+	prt.RegisterOpDecoder(ProofOpSimpleMerkleCommitment, CommitmentOpDecoder)
+	return
+}
+
+func Ics23ProofRuntime() (prt *merkle.ProofRuntime) {
+	prt = merkle.NewProofRuntime()
 	prt.RegisterOpDecoder(ProofOpIAVLCommitment, CommitmentOpDecoder)
 	prt.RegisterOpDecoder(ProofOpSimpleMerkleCommitment, CommitmentOpDecoder)
 	return
