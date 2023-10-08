@@ -54,6 +54,7 @@ import (
 	"github.com/ethereum/go-ethereum/internal/ethapi"
 	"github.com/ethereum/go-ethereum/internal/shutdowncheck"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/metrics"
 	"github.com/ethereum/go-ethereum/miner"
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/p2p"
@@ -284,7 +285,10 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 		votePool := vote.NewVotePool(chainConfig, eth.blockchain, posa)
 		eth.votePool = votePool
 		if parlia, ok := eth.engine.(*parlia.Parlia); ok {
-			parlia.VotePool = votePool
+			if !config.Miner.DisableVoteAttestation {
+				// if there is no VotePool in Parlia Engine, the miner can't get votes for assembling
+				parlia.VotePool = votePool
+			}
 		} else {
 			return nil, fmt.Errorf("Engine is not Parlia type")
 		}
@@ -565,8 +569,12 @@ func (s *Ethereum) StartMining(threads int) error {
 				log.Error("Etherbase account unavailable locally", "err", err)
 				return fmt.Errorf("signer missing: %v", err)
 			}
-
 			parlia.Authorize(eb, wallet.SignData, wallet.SignTx)
+
+			minerInfo := metrics.Get("miner-info")
+			if minerInfo != nil {
+				minerInfo.(metrics.Label).Value()["Etherbase"] = eb.String()
+			}
 		}
 		// If mining is started, we can disable the transaction rejection mechanism
 		// introduced to speed sync times.
@@ -627,9 +635,8 @@ func (s *Ethereum) Protocols() []p2p.Protocol {
 	if s.config.EnableTrustProtocol {
 		protos = append(protos, trust.MakeProtocols((*trustHandler)(s.handler), s.snapDialCandidates)...)
 	}
-	if !s.config.DisableBscProtocol {
-		protos = append(protos, bsc.MakeProtocols((*bscHandler)(s.handler), s.bscDialCandidates)...)
-	}
+	protos = append(protos, bsc.MakeProtocols((*bscHandler)(s.handler), s.bscDialCandidates)...)
+
 	return protos
 }
 

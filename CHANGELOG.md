@@ -1,10 +1,32 @@
 # Changelog
+## v1.2.12
+FEATURE
+* [\#1852](https://github.com/bnb-chain/bsc/pull/1852) discov: add hardcoded bootnodes
+
+BUGFIX
+* [\#1844](https://github.com/bnb-chain/bsc/pull/1844) crypto: Update BLST to v0.3.11
+* [\#1854](https://github.com/bnb-chain/bsc/pull/1854) fetcher: no import blocks before or equal to the finalized height
+* [\#1855](https://github.com/bnb-chain/bsc/pull/1855) eth/tracers: trace system tx should add intrinsicGas
+
+IMPROVEMENT
+* [\#1839](https://github.com/bnb-chain/bsc/pull/1839) Update init-network command
+* [\#1858](https://github.com/bnb-chain/bsc/pull/1858) vote: check consensus key match vote key before voting
+
+## v1.2.11
+FEATURE
+* [\#1797](https://github.com/bnb-chain/bsc/pull/1797) client: add FinalizedHeader/Block to use the fast finality
+* [\#1805](https://github.com/bnb-chain/bsc/pull/1805) vote: remove DisableBscProtocol and add flag to skip votes assmebling
+
+BUGFIX
+* [\#1829](https://github.com/bnb-chain/bsc/pull/1829) fix: lagging nodes failed to sync
+
 ## v1.2.10
 FEATURE
 * [\#1780](https://github.com/bnb-chain/bsc/pull/1780) log: reduce logs when receiving too much votes from a peer
 * [\#1788](https://github.com/bnb-chain/bsc/pull/1788) metrics: add txpool config into metrics server
 * [\#1789](https://github.com/bnb-chain/bsc/pull/1789) rpc: add GetFinalizedHeader/Block to simplify using the fast finality feature
 * [\#1791](https://github.com/bnb-chain/bsc/pull/1791) finality: add more check to ensure result of assembleVoteAttestation
+* [\#1795](https://github.com/bnb-chain/bsc/pull/1795) tool: add a tool extradump to parse extra data after luban
 
 BUGFIX
 * [\#1773](https://github.com/bnb-chain/bsc/pull/1773) discov: do not filter out bootnodes
